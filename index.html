@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BeatByte</title>
 <style>
-  html, body { height: 100%; margin: 0; }
-  body { display: flex; align-items: center; justify-content: center; background: #fff; font-family: system-ui, sans-serif; }
+  html, body { min-height: 100%; margin: 0; }
+  body { min-height: 100vh; box-sizing: border-box; padding: 1.5em 0; display: flex; align-items: center; justify-content: center; background: #fff; font-family: system-ui, sans-serif; }
   h1 { margin: 0; text-align: center; font-size: 10vw; }
   .wrap { text-align: center; }
   a.btn { display: inline-block; margin-top: 1.5em; padding: .9em 1.8em; font-size: 1.3em; background: #3e6ae1; color: #fff; text-decoration: none; border-radius: 10px; }
@@ -14,6 +14,16 @@
   .car h2 { margin: 0 0 .6em; font-size: 1.3em; text-align: center; }
   .car .row { display: flex; justify-content: space-between; padding: .25em 0; }
   .car small { display: block; text-align: center; color: #777; margin-top: .6em; }
+  .energy { margin: 1.2em auto 0; width: min(96vw, 720px); background: #f4f6fb; border-radius: 14px; padding: 1em .8em; box-sizing: border-box; text-align: left; }
+  .energy h2 { margin: 0 0 .5em; font-size: 1.2em; text-align: center; }
+  .kpis { display: flex; gap: .5em; justify-content: space-between; margin-bottom: .6em; }
+  .kpi { flex: 1; background: #fff; border-radius: 10px; padding: .5em; text-align: center; }
+  .kpi b { display: block; font-size: 1.35em; } .kpi span { font-size: .78em; color: #666; }
+  .ranges { display: flex; gap: .4em; justify-content: center; margin-bottom: .5em; }
+  .ranges button { flex: 1; max-width: 7em; padding: .5em; border: 1px solid #ccc; border-radius: 8px; background: #fff; font-size: 1em; }
+  .ranges button.on { background: #222; color: #fff; border-color: #222; }
+  .chartbox { position: relative; height: 320px; }
+  .energy small { display: block; text-align: center; color: #777; margin-top: .5em; font-size: .78em; }
 </style>
 </head>
 <body>
@@ -24,7 +34,13 @@
 <button type="submit" style="width:100%;margin-top:.6em;font-size:1.1em;padding:.6em;border:0;border-radius:8px;background:#222;color:#fff">Entsperren</button>
 <small id="msg"></small></form>
 <div class="car" id="car" hidden><h2 id="cname">🚗</h2><div id="rows"></div><small id="ctime"></small></div>
+<div class="energy" id="energy" hidden><h2>⚡ Energie</h2>
+<div class="kpis"><div class="kpi"><b id="kToday">–</b><span>15-min-Peak heute</span></div><div class="kpi"><b id="kMax">–</b><span>Max. Peak 7 Tage</span></div><div class="kpi"><b id="kNow">–</b><span>Aktuell (Netz)</span></div></div>
+<div class="ranges"><button data-h="6" class="on">6 h</button><button data-h="24">24 h</button><button data-h="168">7 Tage</button></div>
+<div class="chartbox"><canvas id="echart"></canvas></div>
+<small id="etime"></small></div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
 const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 function show(d){
@@ -38,14 +54,62 @@ function show(d){
   document.getElementById('ctime').textContent=d.data_time?'Daten vom '+new Date(d.data_time*1000).toLocaleString('de-AT'):'';
   document.getElementById('lock').hidden=true; document.getElementById('car').hidden=false;
 }
-async function unlock(pw, remember){
-  const e=await (await fetch('/status.enc.json?'+Date.now())).json();
-  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
-  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(e.salt),iterations:e.iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
-  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(e.iv)},key,b64(e.ct));
-  if(remember) sessionStorage.setItem('bbpw',pw);
-  show(JSON.parse(new TextDecoder().decode(pt)));
+const keys={};
+async function dec(url,pw){
+  const e=await (await fetch(url+'?'+Date.now(),{cache:'no-store'})).json();
+  const kid=e.salt+':'+e.iter;
+  if(!keys[kid]){ const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+    keys[kid]=crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(e.salt),iterations:e.iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']); }
+  try{ return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(e.iv)},await keys[kid],b64(e.ct)))); }
+  catch(x){ delete keys[kid]; throw x; }
 }
+async function unlock(pw, remember){
+  const st=await dec('/status.enc.json',pw);
+  if(remember) sessionStorage.setItem('bbpw',pw);
+  show(st);
+  dec('/energy.enc.json',pw).then(showEnergy).catch(err=>{ document.getElementById('energy').hidden=false; document.getElementById('etime').textContent='Energiedaten nicht verfügbar.'; console.error(err); });
+}
+const TZ='Europe/Vienna';
+const fT=ts=>new Date(ts*1000).toLocaleTimeString('de-AT',{timeZone:TZ,hour:'2-digit',minute:'2-digit'});
+const fD=ts=>new Date(ts*1000).toLocaleDateString('de-AT',{timeZone:TZ,weekday:'short',day:'2-digit',month:'2-digit'});
+const kW=w=>w==null?'–':(w/1000).toLocaleString('de-AT',{minimumFractionDigits:2,maximumFractionDigits:2})+' kW';
+let ED=null, chart=null, range=6;
+function showEnergy(d){
+  ED=d; document.getElementById('energy').hidden=false;
+  document.getElementById('kToday').textContent=kW(d.today_peak&&d.today_peak.w);
+  document.getElementById('kMax').textContent=kW(d.max7&&d.max7.w);
+  const last=d.current||(d.blocks.length?d.blocks[d.blocks.length-1]:null);
+  document.getElementById('kNow').textContent=d.blocks.length?kW(d.blocks[d.blocks.length-1][3]):'–';
+  document.getElementById('etime').textContent='Stand '+fD(d.gen)+' '+fT(d.gen)+' · Balken: Ø Netzbezug je '+(range>24?'Stunde':'15 min')+' (Einspeisung negativ) · grau: Stundenwerte Shelly Cloud (nicht für Peak) · Zeiten Wien';
+  draw();
+}
+function draw(){
+  const d=ED; if(!d||!window.Chart) return;
+  const step=range>24?3600:900, now=Math.floor(Date.now()/1000), end=now-now%step+step, start=end-range*3600;
+  const n=Math.round((end-start)/step), lab=[], imp=Array(n).fill(null), exp=Array(n).fill(null), cloud=Array(n).fill(null), tes=Array(n).fill(null);
+  for(let i=0;i<n;i++){ const t=start+i*step; lab.push(range>24?fD(t)+' '+fT(t):fT(t)); }
+  const acc={};
+  for(const [b,ip,ex,net,c] of d.blocks){ const i=Math.floor((b-start)/step); if(i<0||i>=n) continue; (acc[i]=acc[i]||[]).push(net); }
+  for(const i in acc){ const v=acc[i].reduce((a,b)=>a+b,0)/acc[i].length/1000; if(v>=0) imp[i]=v; else exp[i]=v; }
+  for(const [h,ip,ex] of d.hourly){ for(let t=h;t<h+3600;t+=step){ const i=Math.floor((t-start)/step); if(i<0||i>=n||acc[i]) continue; cloud[i]=(ip-ex)/1000; } }
+  for(const [t,k,s] of d.tesla){ const i=Math.floor((t-start)/step); if(i<0||i>=n) continue; tes[i]=k==null?0:k; }
+  const peak=d.today_peak?d.today_peak.w/1000:null, max7=d.max7?d.max7.w/1000:null;
+  const ds=[
+    {type:'bar',label:'Netzbezug (kW)',data:imp,backgroundColor:'#e4572e',grouped:false,order:3},
+    {type:'bar',label:'Einspeisung (kW)',data:exp,backgroundColor:'#2ca58d',grouped:false,order:3},
+    {type:'bar',label:'Netto stündlich, Shelly Cloud (kW)',data:cloud,backgroundColor:'rgba(120,120,120,.35)',grouped:false,order:4},
+    {type:'line',label:'Tesla Laden (kW)',data:tes,borderColor:'#3e6ae1',backgroundColor:'#3e6ae1',spanGaps:true,pointRadius:2,tension:.2,order:1}];
+  if(peak!=null) ds.push({type:'line',label:'Peak heute '+kW(d.today_peak.w),data:Array(n).fill(peak),borderColor:'#b8336a',borderDash:[6,4],pointRadius:0,borderWidth:1.5,order:0});
+  if(max7!=null) ds.push({type:'line',label:'Max. 7 Tage '+kW(d.max7.w),data:Array(n).fill(max7),borderColor:'#555',borderDash:[2,3],pointRadius:0,borderWidth:1.5,order:0});
+  if(chart) chart.destroy();
+  chart=new Chart(document.getElementById('echart'),{data:{labels:lab,datasets:ds},options:{responsive:true,maintainAspectRatio:false,animation:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},tooltip:{filter:i=>i.raw!=null,callbacks:{label:c=>c.raw==null?null:c.dataset.label.replace(/ \(kW\)$/,'')+': '+c.raw.toLocaleString('de-AT',{maximumFractionDigits:2})+' kW'}}},
+    scales:{x:{stacked:false,ticks:{maxTicksLimit:range>24?7:6,maxRotation:0,font:{size:10}},grid:{display:false}},y:{title:{display:true,text:'kW'},ticks:{font:{size:10}}}}}});
+  const note=document.getElementById('etime'); note.textContent=note.textContent.replace(/je (Stunde|15 min)/,'je '+(range>24?'Stunde':'15 min'));
+}
+document.querySelectorAll('.ranges button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.ranges button').forEach(x=>x.classList.toggle('on',x===b)); range=+b.dataset.h; draw(); }));
 document.getElementById('lock').addEventListener('submit',async ev=>{
   ev.preventDefault(); const m=document.getElementById('msg'); m.textContent='Entsperre …';
   try{ await unlock(document.getElementById('pw').value,true); m.textContent=''; }catch(_){ m.textContent='Falsches Passwort.'; }
