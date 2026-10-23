@@ -47,7 +47,7 @@ async function unlock(pw, remember){
   if(remember) sessionStorage.setItem('bbpw',pw);
   show(JSON.parse(new TextDecoder().decode(pt)));
 }
-document.getElementById('lockform').addEventListener('submit',async ev=>{
+document.getElementById('lock').addEventListener('submit',async ev=>{
   ev.preventDefault(); const m=document.getElementById('msg'); m.textContent='Entsperre …';
   try{ await unlock(document.getElementById('pw').value,true); m.textContent=''; }catch(_){ m.textContent='Falsches Passwort.'; }
 });
