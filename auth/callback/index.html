@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>BeatByte – Anmeldung</title>
+<style>
+  body { font-family: system-ui, sans-serif; text-align: center; padding: 2em 1em; }
+  h1 { font-size: 2.2em; }
+  #code { word-break: break-all; font-family: monospace; background: #f2f2f2; padding: 1em; border-radius: 8px; }
+  button { font-size: 1.2em; padding: .7em 1.4em; margin-top: 1em; border-radius: 8px; border: 0; background: #3e6ae1; color: #fff; }
+</style>
+</head>
+<body>
+<h1>Florian ❤️ Eva</h1>
+<div id="ok" hidden>
+<p>Tesla-Anmeldung erfolgreich. Kopiere diesen Code und schick ihn Daheim im Chat (er gilt nur wenige Minuten):</p>
+<p id="code"></p>
+<button onclick="navigator.clipboard.writeText(document.getElementById('code').textContent).then(()=>this.textContent='Kopiert ✓')">Code kopieren</button>
+</div>
+<p id="none">Anmeldung bei Tesla abgeschlossen. Du kannst dieses Fenster schließen.</p>
+<script>
+  var p = new URLSearchParams(location.search), c = p.get('code'), e = p.get('error');
+  if (c) { document.getElementById('code').textContent = c; document.getElementById('ok').hidden = false; document.getElementById('none').hidden = true; }
+  else if (e) { document.getElementById('none').textContent = 'Fehler von Tesla: ' + e + ' ' + (p.get('error_description') || ''); }
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BeatByte</title>
+<style>
+  html, body { height: 100%; margin: 0; }
+  body { display: flex; align-items: center; justify-content: center; background: #fff; font-family: system-ui, sans-serif; }
+  h1 { margin: 0; text-align: center; font-size: 10vw; }
+  .wrap { text-align: center; }
+  a.btn { display: inline-block; margin-top: 1.5em; padding: .9em 1.8em; font-size: 1.3em; background: #3e6ae1; color: #fff; text-decoration: none; border-radius: 10px; }
+  .car { margin: 2em auto 0; max-width: 340px; background: #f4f6fb; border-radius: 14px; padding: 1.2em 1.4em; text-align: left; font-size: 1.05em; }
+  .car h2 { margin: 0 0 .6em; font-size: 1.3em; text-align: center; }
+  .car .row { display: flex; justify-content: space-between; padding: .25em 0; }
+  .car small { display: block; text-align: center; color: #777; margin-top: .6em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Florian ❤️ Eva</h1>
+<form class="car" id="lock" autocomplete="on"><h2>🔒 BRO</h2>
+<input type="password" id="pw" placeholder="Passwort" autocomplete="current-password" style="width:100%;box-sizing:border-box;font-size:1.1em;padding:.6em;border:1px solid #ccc;border-radius:8px">
+<button type="submit" style="width:100%;margin-top:.6em;font-size:1.1em;padding:.6em;border:0;border-radius:8px;background:#222;color:#fff">Entsperren</button>
+<small id="msg"></small></form>
+<div class="car" id="car" hidden><h2 id="cname">🚗</h2><div id="rows"></div><small id="ctime"></small></div>
+<a class="btn" href="/login/">Mit Tesla anmelden</a>
+</div>
+<script>
+const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+function show(d){
+  const rows=[['Status',{online:'Online',asleep:'Schläft',offline:'Offline'}[d.state]||d.state],
+   ['Akku',d.battery!=null?d.battery+' %':null],['Reichweite',d.range_km!=null?d.range_km+' km':null],
+   ['Laden',{Disconnected:'Nicht angesteckt',Charging:'Lädt',Complete:'Fertig geladen',Stopped:'Pausiert'}[d.charging]||d.charging],
+   ['Gang',d.shift?d.shift:'P'],['Versperrt',d.locked==null?null:(d.locked?'Ja':'Nein')],
+   ['Innen / Außen',d.inside_temp!=null?d.inside_temp+' °C / '+d.outside_temp+' °C':null],['Kilometerstand',d.odometer_km!=null?d.odometer_km.toLocaleString('de-AT')+' km':null]];
+  document.getElementById('cname').textContent='🚗 '+(d.name||'Tesla');
+  document.getElementById('rows').innerHTML=rows.filter(r=>r[1]!=null).map(r=>'<div class="row"><span>'+r[0]+'</span><b>'+r[1]+'</b></div>').join('');
+  document.getElementById('ctime').textContent=d.data_time?'Daten vom '+new Date(d.data_time*1000).toLocaleString('de-AT'):'';
+  document.getElementById('lock').hidden=true; document.getElementById('car').hidden=false;
+}
+async function unlock(pw, remember){
+  const e=await (await fetch('/status.enc.json?'+Date.now())).json();
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(e.salt),iterations:e.iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(e.iv)},key,b64(e.ct));
+  if(remember) sessionStorage.setItem('bbpw',pw);
+  show(JSON.parse(new TextDecoder().decode(pt)));
+}
+document.getElementById('lockform').addEventListener('submit',async ev=>{
+  ev.preventDefault(); const m=document.getElementById('msg'); m.textContent='Entsperre …';
+  try{ await unlock(document.getElementById('pw').value,true); m.textContent=''; }catch(_){ m.textContent='Falsches Passwort.'; }
+});
+const saved=sessionStorage.getItem('bbpw'); if(saved) unlock(saved,false).catch(()=>sessionStorage.removeItem('bbpw'));
+</script>
+</body>
+</html>
