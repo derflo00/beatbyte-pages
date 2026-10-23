@@ -24,6 +24,15 @@
   .ranges button.on { background: #222; color: #fff; border-color: #222; }
   .chartbox { position: relative; height: 320px; }
   .energy small { display: block; text-align: center; color: #777; margin-top: .5em; font-size: .78em; }
+  .cost { margin: 1.2em auto 0; width: min(96vw, 720px); background: #f4f6fb; border-radius: 14px; padding: 1em .9em; box-sizing: border-box; text-align: left; }
+  .cost h2 { margin: 0 0 .5em; font-size: 1.2em; text-align: center; }
+  .cost .cfg { display: flex; gap: .6em; margin-bottom: .6em; } .cost .cfg label { flex: 1; font-size: .85em; color: #555; }
+  .cost .cfg input { width: 100%; box-sizing: border-box; font-size: 1.05em; padding: .45em; border: 1px solid #ccc; border-radius: 8px; margin-top: .2em; }
+  .cost table { width: 100%; border-collapse: collapse; font-size: .95em; background: #fff; border-radius: 10px; overflow: hidden; }
+  .cost td { padding: .42em .55em; border-bottom: 1px solid #eef0f5; } .cost td.n { text-align: right; white-space: nowrap; }
+  .cost tr.sum td { font-weight: 700; background: #eef3ff; } .cost tr.sub td:first-child { padding-left: 1.4em; color: #555; }
+  .cost tr.h td { font-size: .78em; color: #888; text-transform: uppercase; letter-spacing: .04em; background: #fafbfd; }
+  .cost small { display: block; color: #777; margin-top: .55em; font-size: .76em; line-height: 1.35; }
 </style>
 </head>
 <body>
@@ -34,6 +43,11 @@
 <button type="submit" style="width:100%;margin-top:.6em;font-size:1.1em;padding:.6em;border:0;border-radius:8px;background:#222;color:#fff">Entsperren</button>
 <small id="msg"></small></form>
 <div class="car" id="car" hidden><h2 id="cname">🚗</h2><div id="rows"></div><small id="ctime"></small></div>
+<div class="cost" id="cost" hidden><h2>💶 Kostenaufteilung</h2>
+<div class="ranges" id="cper"><button data-p="today" class="on">Heute</button><button data-p="month">Monat</button><button data-p="last" id="plast" hidden>Vormonat</button><button data-p="all">Seit Start</button></div>
+<div class="cfg"><label>Preis €/kWh<input id="cprice" type="number" inputmode="decimal" step="0.01" min="0"></label><label>Ladeverlust %<input id="closs" type="number" inputmode="decimal" step="1" min="0" max="40"></label></div>
+<table id="ctab"></table>
+<small id="cnote"></small></div>
 <div class="energy" id="energy" hidden><h2>⚡ Energie</h2>
 <div class="kpis"><div class="kpi"><b id="kToday">–</b><span>15-min-Peak heute</span></div><div class="kpi"><b id="kMax">–</b><span>Max. Peak 7 Tage</span></div><div class="kpi"><b id="kNow">–</b><span>Aktuell (Netz)</span></div></div>
 <div class="ranges"><button data-h="6" class="on">6 h</button><button data-h="24">24 h</button><button data-h="168">7 Tage</button></div>
@@ -81,7 +95,7 @@ function showEnergy(d){
   const last=d.current||(d.blocks.length?d.blocks[d.blocks.length-1]:null);
   document.getElementById('kNow').textContent=d.blocks.length?kW(d.blocks[d.blocks.length-1][3]):'–';
   document.getElementById('etime').textContent='Stand '+fD(d.gen)+' '+fT(d.gen)+' · Balken: Ø Netzbezug je '+(range>24?'Stunde':'15 min')+' (Einspeisung negativ) · grau: Stundenwerte Shelly Cloud (nicht für Peak) · Zeiten Wien';
-  draw();
+  draw(); showCost();
 }
 function draw(){
   const d=ED; if(!d||!window.Chart) return;
@@ -108,12 +122,66 @@ function draw(){
     scales:{x:{stacked:false,ticks:{maxTicksLimit:range>24?7:6,maxRotation:0,font:{size:10}},grid:{display:false}},y:{title:{display:true,text:'kW'},ticks:{font:{size:10}}}}}});
   const note=document.getElementById('etime'); note.textContent=note.textContent.replace(/je (Stunde|15 min)/,'je '+(range>24?'Stunde':'15 min'));
 }
-document.querySelectorAll('.ranges button').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.ranges button').forEach(x=>x.classList.toggle('on',x===b)); range=+b.dataset.h; draw(); }));
+document.querySelectorAll('#energy .ranges button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#energy .ranges button').forEach(x=>x.classList.toggle('on',x===b)); range=+b.dataset.h; draw(); }));
 document.getElementById('lock').addEventListener('submit',async ev=>{
   ev.preventDefault(); const m=document.getElementById('msg'); m.textContent='Entsperre …';
   try{ await unlock(document.getElementById('pw').value,true); m.textContent=''; }catch(_){ m.textContent='Falsches Passwort.'; }
 });
+
+// ---- Kostenaufteilung (alles im Browser, Preis/Verlust nur in localStorage) ----
+let CP='today';
+const num=(x,d=2)=>x.toLocaleString('de-AT',{minimumFractionDigits:d,maximumFractionDigits:d});
+const eur=x=>num(x)+' €', kwh=x=>num(x,1)+' kWh';
+function vParts(ts){ const p={}; new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',hourCycle:'h23'}).formatToParts(new Date(ts*1000)).forEach(x=>p[x.type]=+x.value); return p; }
+function vMid(y,m,d){ const g=Date.UTC(y,m-1,d)/1000, p=vParts(g); const off=(Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute)/1000)-g; return g-off; }
+function periods(c){
+  const now=Math.floor(Date.now()/1000), p=vParts(now);
+  const m0=vMid(p.year,p.month,1), lm=p.month==1?[p.year-1,12]:[p.year,p.month-1];
+  return {today:[vMid(p.year,p.month,p.day),now+900,'heute'],month:[m0,now+900,'diesen Monat'],last:[vMid(lm[0],lm[1],1),m0,'im Vormonat'],all:[c.t0||0,now+900,'seit Start']};
+}
+function costCalc(c,from,to,loss){
+  const imp={},exp={},est={};
+  for(const [i,ip,ex] of c.em15){ const t=c.t0+i*c.blk; imp[t]=ip; exp[t]=ex; }
+  const ses={}; for(const s of c.sessions) ses[s.id]=s;
+  const fac=s=>s.added_kwh!=null&&s.meas_kwh>0.05?s.added_kwh*(1+loss)/s.meas_kwh:null;
+  for(const [sid,t,wh] of c.tesla){ const f=fac(ses[sid]); if(f==null) continue; est[t]=(est[t]||0)+wh*f; }
+  for(const s of c.sessions){ if(s.added_kwh==null||fac(s)!=null) continue; const ts=s.end||s.last||s.start, t=ts-ts%c.blk; est[t]=(est[t]||0)+s.added_kwh*1000*(1+loss); }
+  let G=0,E=0,T=0,Tg=0;
+  for(const t in imp){ if(t>=from&&t<to){ G+=imp[t]; E+=exp[t]; } }
+  for(const t in est){ if(t>=from&&t<to){ T+=est[t]; Tg+=imp[t]!=null?Math.min(est[t],imp[t]):est[t]; } }
+  return {G:G/1000,E:E/1000,T:T/1000,Tg:Tg/1000};
+}
+function showCost(){
+  const c=ED&&ED.cost; if(!c) return; document.getElementById('cost').hidden=false;
+  const P=periods(c); document.getElementById('plast').hidden=!(c.t0&&c.t0<P.last[1]);
+  const price=Math.max(0,parseFloat(String(document.getElementById('cprice').value).replace(',','.'))||0);
+  const loss=Math.max(0,parseFloat(String(document.getElementById('closs').value).replace(',','.'))||0)/100;
+  const [f,t,lbl]=P[CP], r=costCalc(c,Math.max(f,c.t0||0),t,loss), rest=Math.max(0,r.G-r.Tg);
+  const row=(a,b,cl)=>'<tr'+(cl?' class="'+cl+'"':'')+'><td>'+a+'</td><td class="n">'+b+'</td></tr>';
+  document.getElementById('ctab').innerHTML=
+    row('Tesla','', 'h')+
+    row('Tesla Laden aus dem Netz',kwh(r.Tg))+row('Tesla Kosten (nur Florian)',eur(r.Tg*price))+
+    (r.T-r.Tg>0.05?row('davon aus PV geladen (gratis)',kwh(r.T-r.Tg),'sub'):'')+
+    row('Rest (Haus)','', 'h')+
+    row('Netzbezug gesamt',kwh(r.G))+row('Rest = Netzbezug − Tesla',kwh(rest))+row('Rest Kosten',eur(rest*price))+
+    row('½ Florian',eur(rest*price/2),'sub')+row('½ Vermieterin',eur(rest*price/2),'sub')+
+    row('Summe','', 'h')+
+    row('Florian gesamt (Tesla + ½ Rest)',eur(r.Tg*price+rest*price/2),'sum')+row('Vermieterin (½ Rest)',eur(rest*price/2),'sum')+
+    row('Einspeisung (nicht aufgeteilt)',kwh(r.E));
+  const ss=c.sessions.filter(s=>s.meas_kwh>0.5&&s.added_kwh);
+  const ratio=ss.length?ss.reduce((a,s)=>a+s.meas_kwh,0)/ss.reduce((a,s)=>a+s.added_kwh,0):null;
+  const fd=ts=>ts?fD(ts)+' '+fT(ts):'–';
+  document.getElementById('cnote').textContent='Zeitraum '+lbl+' · Messung ab '+fd(c.t0)+', Tesla-Erfassung ab '+fd(c.tesla_since)+'. '+
+    'Annahmen: Tesla-Energie = „charge_energy_added“ (batterieseitig) je Ladesitzung + '+num(loss*100,0)+' % Ladeverlust, zeitlich verteilt nach der gemessenen Ladeleistung (alle 3 min). '+
+    'Je 15 min zählt Tesla höchstens so viel wie der Zähler in dem Block aus dem Netz bezogen hat; der Rest gilt als PV-Strom (gratis). '+
+    (ratio?'Gemessen Wand/Batterie bisher: '+num((ratio-1)*100,0)+' % Verlust. ':'')+'Preis und Verlust werden nur in diesem Browser gespeichert.';
+}
+document.getElementById('cprice').value=localStorage.getItem('bb_price')||'0.30';
+document.getElementById('closs').value=localStorage.getItem('bb_loss')||'10';
+['cprice','closs'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{ localStorage.setItem(id=='cprice'?'bb_price':'bb_loss',e.target.value); showCost(); }));
+document.querySelectorAll('#cper button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#cper button').forEach(x=>x.classList.toggle('on',x===b)); CP=b.dataset.p; showCost(); }));
 const saved=sessionStorage.getItem('bbpw'); if(saved) unlock(saved,false).catch(()=>sessionStorage.removeItem('bbpw'));
 </script>
 </body>
