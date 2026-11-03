@@ -106,8 +106,9 @@ function showPresence(d){
   document.getElementById('pnow').textContent=p.car_home===true?'Zuhause':(p.car_home===false?'Unterwegs / weg':'noch unbekannt (wartet auf BRO online)');
   document.getElementById('pnow').className=p.car_home===false?'awaymark':'';
   const house=Math.max(0,(p.away_imp_kwh||0)-(p.away_tesla_grid_kwh||0));
-  document.getElementById('paway').textContent=(p.away&&p.away.length)?(num(p.away_imp_kwh||0,1)+' kWh · Haus ohne Tesla ≈ '+num(house,1)+' kWh'):'keine Away-Intervalle erfasst';
-  document.getElementById('ptesla').textContent=num(p.away_tesla_grid_kwh||0,1)+' kWh';
+  const fmt=(x,d=1)=>Number(x).toLocaleString('de-AT',{minimumFractionDigits:d,maximumFractionDigits:d});
+  document.getElementById('paway').textContent=(p.away&&p.away.length)?(fmt(p.away_imp_kwh||0)+' kWh · Haus ohne Tesla ≈ '+fmt(house)+' kWh'):'keine Away-Intervalle erfasst';
+  document.getElementById('ptesla').textContent=fmt(p.away_tesla_grid_kwh||0)+' kWh';
   document.getElementById('pnote').textContent=(p.note||'')+' Zeiträume ohne GPS-Sample werden nicht rückwirkend geschätzt. Rosa Balken im Diagramm = Auto laut letztem Standort weg.';
 }
 function showEnergy(d){
@@ -146,7 +147,7 @@ function draw(){
   chart=new Chart(document.getElementById('echart'),{data:{labels:lab,datasets:ds},options:{responsive:true,maintainAspectRatio:false,animation:false,
     interaction:{mode:'index',intersect:false},
     plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},tooltip:{filter:i=>i.raw!=null&&i.dataset.label!=='Auto weg',callbacks:{label:c=>c.raw==null?null:c.dataset.label.replace(/ \(kW\)$/,'')+': '+c.raw.toLocaleString('de-AT',{maximumFractionDigits:2})+' kW'}}},
-    scales:{x:{stacked:false,ticks:{maxTicksLimit:range>24?7:6,maxRotation:0,font:{size:10}},grid:{display:false}},y:{title:{display:true,text:'kW'},ticks:{font:{size:10}}},yAway:{display:false,min:0,max:1,grid:{display:false},stacked:false}}}}});
+    scales:{x:{stacked:false,ticks:{maxTicksLimit:range>24?7:6,maxRotation:0,font:{size:10}},grid:{display:false}},y:{title:{display:true,text:'kW'},ticks:{font:{size:10}}},yAway:{display:false,min:0,max:1,grid:{display:false},stacked:false}}}});
   const note=document.getElementById('etime'); note.textContent=note.textContent.replace(/je (Stunde|15 min)/,'je '+(range>24?'Stunde':'15 min'));
 }
 document.querySelectorAll('#energy .ranges button').forEach(b=>b.addEventListener('click',()=>{
