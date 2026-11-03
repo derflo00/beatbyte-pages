@@ -34,6 +34,11 @@
   .cost tr.sum td { font-weight: 700; background: #eef3ff; } .cost tr.sub td:first-child { padding-left: 1.4em; color: #555; }
   .cost tr.h td { font-size: .78em; color: #888; text-transform: uppercase; letter-spacing: .04em; background: #fafbfd; }
   .cost small { display: block; color: #777; margin-top: .55em; font-size: .76em; line-height: 1.35; }
+  .pres { margin: 1.2em auto 0; width: min(96vw, 720px); background: #f4f6fb; border-radius: 14px; padding: 1em .9em; box-sizing: border-box; text-align: left; }
+  .pres h2 { margin: 0 0 .5em; font-size: 1.2em; text-align: center; }
+  .pres .row { display: flex; justify-content: space-between; padding: .25em 0; background: #fff; border-radius: 8px; padding: .5em .7em; margin-bottom: .4em; }
+  .pres small { display: block; color: #777; margin-top: .45em; font-size: .76em; line-height: 1.35; }
+  .pres .awaymark { color: #9a3412; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -49,6 +54,11 @@
 <div class="cfg"><label>Preis €/kWh<input id="cprice" type="number" inputmode="decimal" step="0.01" min="0"></label><label>Ladeverlust (Annahme)<input id="closs" type="text" readonly tabindex="-1" style="background:#f0f0f0;color:#555"></label></div>
 <table id="ctab"></table>
 <small id="cnote"></small></div>
+<div class="pres" id="pres" hidden><h2>🏠 Anwesenheit (Auto)</h2>
+<div class="row"><span>BRO gerade</span><b id="pnow">–</b></div>
+<div class="row"><span>Netzbezug während „Auto weg“ (7 Tage)</span><b id="paway">–</b></div>
+<div class="row"><span>davon Tesla-Netzanteil</span><b id="ptesla">–</b></div>
+<small id="pnote"></small></div>
 <div class="energy" id="energy" hidden><h2>⚡ Energie</h2>
 <div class="kpis"><div class="kpi"><b id="kToday">–</b><span>15-min-Peak heute</span></div><div class="kpi"><b id="kMax">–</b><span>Max. Peak 7 Tage</span></div><div class="kpi"><b id="kNow">–</b><span>Aktuell (Netz)</span></div></div>
 <div class="ranges"><button data-h="6" class="on">6 h</button><button data-h="24">24 h</button><button data-h="168">7 Tage</button></div>
@@ -62,6 +72,7 @@ function show(d){
   const rows=[['Status',{online:'Online',asleep:'Schläft',offline:'Offline'}[d.state]||d.state],
    ['Akku',d.battery!=null?d.battery+' %':null],['Reichweite',d.range_km!=null?d.range_km+' km':null],
    ['Laden',{Disconnected:'Nicht angesteckt',Charging:'Lädt',Complete:'Fertig geladen',Stopped:'Pausiert'}[d.charging]||d.charging],
+   ['Standort',d.car_home===true?'Zuhause':(d.car_home===false?'Unterwegs / weg':null)],
    ['Gang',d.shift?d.shift:'P'],['Versperrt',d.locked==null?null:(d.locked?'Ja':'Nein')],
    ['Innen / Außen',d.inside_temp!=null?d.inside_temp+' °C / '+d.outside_temp+' °C':null],['Kilometerstand',d.odometer_km!=null?d.odometer_km.toLocaleString('de-AT')+' km':null]];
   document.getElementById('cname').textContent='🚗 '+(d.name||'Tesla');
@@ -89,20 +100,34 @@ const fT=ts=>new Date(ts*1000).toLocaleTimeString('de-AT',{timeZone:TZ,hour:'2-d
 const fD=ts=>new Date(ts*1000).toLocaleDateString('de-AT',{timeZone:TZ,weekday:'short',day:'2-digit',month:'2-digit'});
 const kW=w=>w==null?'–':(w/1000).toLocaleString('de-AT',{minimumFractionDigits:2,maximumFractionDigits:2})+' kW';
 let ED=null, chart=null, range=6;
+function showPresence(d){
+  const p=d&&d.presence; const el=document.getElementById('pres'); if(!p){ el.hidden=true; return; }
+  el.hidden=false;
+  document.getElementById('pnow').textContent=p.car_home===true?'Zuhause':(p.car_home===false?'Unterwegs / weg':'noch unbekannt (wartet auf BRO online)');
+  document.getElementById('pnow').className=p.car_home===false?'awaymark':'';
+  const house=Math.max(0,(p.away_imp_kwh||0)-(p.away_tesla_grid_kwh||0));
+  document.getElementById('paway').textContent=(p.away&&p.away.length)?(num(p.away_imp_kwh||0,1)+' kWh · Haus ohne Tesla ≈ '+num(house,1)+' kWh'):'keine Away-Intervalle erfasst';
+  document.getElementById('ptesla').textContent=num(p.away_tesla_grid_kwh||0,1)+' kWh';
+  document.getElementById('pnote').textContent=(p.note||'')+' Zeiträume ohne GPS-Sample werden nicht rückwirkend geschätzt. Rosa Balken im Diagramm = Auto laut letztem Standort weg.';
+}
 function showEnergy(d){
   ED=d; document.getElementById('energy').hidden=false;
   document.getElementById('kToday').textContent=kW(d.today_peak&&d.today_peak.w);
   document.getElementById('kMax').textContent=kW(d.max7&&d.max7.w);
   const last=d.current||(d.blocks.length?d.blocks[d.blocks.length-1]:null);
   document.getElementById('kNow').textContent=d.blocks.length?kW(d.blocks[d.blocks.length-1][3]):'–';
-  document.getElementById('etime').textContent='Stand '+fD(d.gen)+' '+fT(d.gen)+' · Balken: Ø Netzbezug je '+(range>24?'Stunde':'15 min')+' (Einspeisung negativ) · grau: Stundenwerte Shelly Cloud (nicht für Peak) · Zeiten Wien';
-  draw(); showCost();
+  document.getElementById('etime').textContent='Stand '+fD(d.gen)+' '+fT(d.gen)+' · Balken: Ø Netzbezug je '+(range>24?'Stunde':'15 min')+' (Einspeisung negativ) · grau: Stundenwerte Shelly Cloud · rosa: Auto weg · Zeiten Wien';
+  draw(); showCost(); showPresence(d);
 }
 function draw(){
   const d=ED; if(!d||!window.Chart) return;
   const step=range>24?3600:900, now=Math.floor(Date.now()/1000), end=now-now%step+step, start=end-range*3600;
-  const n=Math.round((end-start)/step), lab=[], imp=Array(n).fill(null), exp=Array(n).fill(null), cloud=Array(n).fill(null), tes=Array(n).fill(null);
+  const n=Math.round((end-start)/step), lab=[], imp=Array(n).fill(null), exp=Array(n).fill(null), cloud=Array(n).fill(null), tes=Array(n).fill(null), away=Array(n).fill(null);
   for(let i=0;i<n;i++){ const t=start+i*step; lab.push(range>24?fD(t)+' '+fT(t):fT(t)); }
+  const awayRanges=(d.presence&&d.presence.away)||[];
+  for(const [a,b] of awayRanges){
+    for(let i=0;i<n;i++){ const t0=start+i*step, t1=t0+step; if(t1>a && t0<b) away[i]=1; }
+  }
   const acc={};
   for(const [b,ip,ex,net,c] of d.blocks){ const i=Math.floor((b-start)/step); if(i<0||i>=n) continue; (acc[i]=acc[i]||[]).push(net); }
   for(const i in acc){ const v=acc[i].reduce((a,b)=>a+b,0)/acc[i].length/1000; if(v>=0) imp[i]=v; else exp[i]=v; }
@@ -110,6 +135,7 @@ function draw(){
   for(const [t,k,s] of d.tesla){ const i=Math.floor((t-start)/step); if(i<0||i>=n) continue; tes[i]=k==null?0:k; }
   const peak=d.today_peak?d.today_peak.w/1000:null, max7=d.max7?d.max7.w/1000:null;
   const ds=[
+    {type:'bar',label:'Auto weg',data:away,backgroundColor:'rgba(185,28,28,.12)',borderWidth:0,grouped:false,order:5,yAxisID:'yAway',barPercentage:1.0,categoryPercentage:1.0},
     {type:'bar',label:'Netzbezug (kW)',data:imp,backgroundColor:'#e4572e',grouped:false,order:3},
     {type:'bar',label:'Einspeisung (kW)',data:exp,backgroundColor:'#2ca58d',grouped:false,order:3},
     {type:'bar',label:'Netto stündlich, Shelly Cloud (kW)',data:cloud,backgroundColor:'rgba(120,120,120,.35)',grouped:false,order:4},
@@ -119,8 +145,8 @@ function draw(){
   if(chart) chart.destroy();
   chart=new Chart(document.getElementById('echart'),{data:{labels:lab,datasets:ds},options:{responsive:true,maintainAspectRatio:false,animation:false,
     interaction:{mode:'index',intersect:false},
-    plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},tooltip:{filter:i=>i.raw!=null,callbacks:{label:c=>c.raw==null?null:c.dataset.label.replace(/ \(kW\)$/,'')+': '+c.raw.toLocaleString('de-AT',{maximumFractionDigits:2})+' kW'}}},
-    scales:{x:{stacked:false,ticks:{maxTicksLimit:range>24?7:6,maxRotation:0,font:{size:10}},grid:{display:false}},y:{title:{display:true,text:'kW'},ticks:{font:{size:10}}}}}});
+    plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},tooltip:{filter:i=>i.raw!=null&&i.dataset.label!=='Auto weg',callbacks:{label:c=>c.raw==null?null:c.dataset.label.replace(/ \(kW\)$/,'')+': '+c.raw.toLocaleString('de-AT',{maximumFractionDigits:2})+' kW'}}},
+    scales:{x:{stacked:false,ticks:{maxTicksLimit:range>24?7:6,maxRotation:0,font:{size:10}},grid:{display:false}},y:{title:{display:true,text:'kW'},ticks:{font:{size:10}}},yAway:{display:false,min:0,max:1,grid:{display:false},stacked:false}}}}});
   const note=document.getElementById('etime'); note.textContent=note.textContent.replace(/je (Stunde|15 min)/,'je '+(range>24?'Stunde':'15 min'));
 }
 document.querySelectorAll('#energy .ranges button').forEach(b=>b.addEventListener('click',()=>{
