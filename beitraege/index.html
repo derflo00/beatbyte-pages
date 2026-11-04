@@ -4,8 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Beiträge – Florian Kronsteiner</title>
-<meta name="description" content="Alle Beiträge und Artikel von Florian Kronsteiner auf X.">
+<meta name="description" content="Artikel und Gedanken zu Technik, KI und Smart Home von Florian Kronsteiner.">
 <meta name="theme-color" content="#1a120d">
+<link rel="canonical" href="https://beatbyte.at/beitraege/">
+<link rel="alternate" type="application/rss+xml" title="Beiträge – Florian Kronsteiner" href="https://beatbyte.at/beitraege/feed.xml">
+<meta property="og:title" content="Beiträge – Florian Kronsteiner">
+<meta property="og:description" content="Artikel und Gedanken zu Technik, KI und Smart Home von Florian Kronsteiner.">
+<meta property="og:url" content="https://beatbyte.at/beitraege/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://beatbyte.at/grok/img/viele-groks.png">
+<meta property="og:locale" content="de_AT">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/style.css">
 </head>
@@ -21,17 +30,42 @@
 <section aria-labelledby="h-beitraege">
 <p class="label">Beiträge</p>
 <h1 id="h-beitraege">Alle Beiträge &amp; Artikel</h1>
-<p class="lead">Gedanken zu Technik, KI und Smart Home – veröffentlicht auf X.</p>
-<!-- BEITRAEGE:START -->
-<div class="grid">
-<article class="card post"><img class="post-img" src="/beitraege/img/2118063553710301423.jpg" alt="Ein Klick, und Grok hätte alle meine Dokumente gehabt" loading="lazy" decoding="async" width="1080" height="432"><span class="idx"><time datetime="2026-11-04">04.11.2026</time> · ARTIKEL</span><h3>Ein Klick, und Grok hätte alle meine Dokumente gehabt</h3><p>Wie ich fast mit einem einzigen Klick meinem KI-Assistenten Vollzugriff auf alle meine Google Docs gegeben hätte – und warum ich Nein gesagt habe.</p><a class="more" href="https://x.com/derflo000/status/2118063553710301423" target="_blank" rel="noopener">Auf X lesen →</a></article>
+<p class="lead">Gedanken zu Technik, KI und Smart Home – zuerst hier auf beatbyte.at.</p>
+<nav class="topics" aria-label="Themen"><a href="#alle" data-filter="*">Alle</a><a href="#ki-assistenten" data-filter="KI &amp; Assistenten">KI &amp; Assistenten</a></nav>
+<span id="ki-assistenten" hidden></span>
+<div class="grid" id="alle">
+<div class="post-wrap" data-category="KI &amp; Assistenten" id="post-viele-groks"><article class="card post"><img class="post-img" src="/grok/img/viele-groks.png" alt="Sieben Grok-Bots um einen gemeinsamen Computer, verbunden über Screenshots und Textschnipsel" loading="lazy" decoding="async" width="1024" height="1024"><span class="idx"><time datetime="2026-11-04">04.11.2026</time> · ARTIKEL · KI &amp; Assistenten</span><h3>Viele Groks, kein gemeinsames Gedächtnis</h3><p>Ich bin nicht der Chef eines Teams. Ich bin der Bote zwischen meinen eigenen Assistenten.</p><a class="more" href="/beitraege/viele-groks/">Artikel lesen →</a></article></div>
+<div class="post-wrap" data-category="KI &amp; Assistenten" id="post-ein-klick"><article class="card post"><img class="post-img" src="/beitraege/ein-klick/berechtigung.jpg" alt="Google-Berechtigungsfenster: Zugriff auf Google Docs angefordert" loading="lazy" decoding="async" width="945" height="2048"><span class="idx"><time datetime="2026-11-04">04.11.2026</time> · ARTIKEL · KI &amp; Assistenten</span><h3>Ein Klick, und Grok hätte alle meine Dokumente gehabt</h3><p>Wie ich fast mit einem einzigen Klick meinem KI-Assistenten Vollzugriff auf alle meine Google Docs gegeben hätte – und warum ich Nein gesagt habe.</p><a class="more" href="/beitraege/ein-klick/">Artikel lesen →</a></article></div>
 </div>
-<!-- BEITRAEGE:END -->
-<p class="note"><a href="/">← Zur Startseite</a></p>
+<p class="note"><a href="/">← Zur Startseite</a> · <a href="/beitraege/feed.xml">RSS</a></p>
 </section>
+<script>
+(function(){
+  var map={"ki-assistenten":"KI & Assistenten","smart-home-energie":"Smart Home & Energie"};
+  function apply(filter){
+    document.querySelectorAll('.post-wrap').forEach(function(el){
+      var show = !filter || filter==='*' || el.getAttribute('data-category')===filter;
+      el.hidden = !show;
+    });
+    document.querySelectorAll('.topics a').forEach(function(a){
+      var f=a.getAttribute('data-filter');
+      a.classList.toggle('is-active', f===filter || (!filter && f==='*'));
+    });
+  }
+  function fromHash(){
+    var h=(location.hash||'').slice(1);
+    if(!h || h==='alle') apply('*');
+    else apply(map[h] || decodeURIComponent(h));
+  }
+  document.querySelectorAll('.topics a').forEach(function(a){
+    a.addEventListener('click', function(){ /* hashchange handles */ });
+  });
+  window.addEventListener('hashchange', fromHash);
+  fromHash();
+})();
+</script>
+
 </main>
-<footer>
-<div class="wrap"><span>© 2026 Florian Kronsteiner · St. Michael i. O.</span><span><a href="/impressum/">Impressum</a> · <a href="/datenschutz/">Datenschutz</a></span></div>
-</footer>
+<footer><div class="wrap"><span>© 2026 Florian Kronsteiner · St. Michael i. O.</span><span><a href="/impressum/">Impressum</a> · <a href="/datenschutz/">Datenschutz</a></span></div></footer>
 </body>
 </html>

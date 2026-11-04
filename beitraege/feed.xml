@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+  <title>Beiträge – Florian Kronsteiner</title>
+  <link>https://beatbyte.at/beitraege/</link>
+  <description>Artikel zu Technik, KI und Smart Home von Florian Kronsteiner.</description>
+  <language>de-at</language>
+  <item>
+    <title>Viele Groks, kein gemeinsames Gedächtnis</title>
+    <link>https://beatbyte.at/beitraege/viele-groks/</link>
+    <guid isPermaLink="true">https://beatbyte.at/beitraege/viele-groks/</guid>
+    <pubDate>Wed, 04 Nov 2026 12:00:00 +0100</pubDate>
+    <description>Ich bin nicht der Chef eines Teams. Ich bin der Bote zwischen meinen eigenen Assistenten.</description>
+    <enclosure url="https://beatbyte.at/grok/img/viele-groks.png" type="image/png" length="0" />
+  </item>
+  <item>
+    <title>Ein Klick, und Grok hätte alle meine Dokumente gehabt</title>
+    <link>https://beatbyte.at/beitraege/ein-klick/</link>
+    <guid isPermaLink="true">https://beatbyte.at/beitraege/ein-klick/</guid>
+    <pubDate>Wed, 04 Nov 2026 12:00:00 +0100</pubDate>
+    <description>Wie ich fast mit einem einzigen Klick meinem KI-Assistenten Vollzugriff auf alle meine Google Docs gegeben hätte – und warum ich Nein gesagt habe.</description>
+    <enclosure url="https://beatbyte.at/beitraege/ein-klick/berechtigung.jpg" type="image/jpeg" length="0" />
+  </item>
+</channel>
+</rss>

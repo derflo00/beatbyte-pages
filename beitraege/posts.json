@@ -1,12 +1,32 @@
 [
   {
+    "slug": "viele-groks",
+    "date": "2026-11-04",
+    "title": "Viele Groks, kein gemeinsames Gedächtnis",
+    "teaser": "Ich bin nicht der Chef eines Teams. Ich bin der Bote zwischen meinen eigenen Assistenten.",
+    "type": "Artikel",
+    "category": "KI & Assistenten",
+    "series": "Grok-Protokoll",
+    "x_url": "",
+    "image": "grok/img/viele-groks.png",
+    "image_w": 1024,
+    "image_h": 1024,
+    "image_alt": "Sieben Grok-Bots um einen gemeinsamen Computer, verbunden über Screenshots und Textschnipsel",
+    "body": "beitraege/viele-groks/artikel.md"
+  },
+  {
+    "slug": "ein-klick",
     "date": "2026-11-04",
     "title": "Ein Klick, und Grok hätte alle meine Dokumente gehabt",
     "teaser": "Wie ich fast mit einem einzigen Klick meinem KI-Assistenten Vollzugriff auf alle meine Google Docs gegeben hätte – und warum ich Nein gesagt habe.",
-    "url": "https://x.com/derflo000/status/2118063553710301423",
     "type": "Artikel",
-    "image": "beitraege/img/2118063553710301423.jpg",
-    "image_w": 1080,
-    "image_h": 432
+    "category": "KI & Assistenten",
+    "series": "Grok-Protokoll",
+    "x_url": "https://x.com/derflo000/status/2118063553710301423",
+    "image": "beitraege/ein-klick/berechtigung.jpg",
+    "image_w": 945,
+    "image_h": 2048,
+    "image_alt": "Google-Berechtigungsfenster: Zugriff auf Google Docs angefordert",
+    "body": "beitraege/ein-klick/artikel.md"
   }
 ]
