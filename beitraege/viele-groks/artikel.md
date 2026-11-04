@@ -14,6 +14,8 @@ Ist es aber nur halb. Die Grok-Oberflächen wissen nichts von dem, was meine Bot
 
 Ich bin also nicht der Chef eines Teams. Ich bin der Bote zwischen meinen eigenen Assistenten. Was zwischen ihnen ankommt, sind Screenshots und kopierte Textschnipsel.
 
+Wie wörtlich das gemeint ist, zeigt mir die Grok-App. Die bittet mich ganz ernsthaft, unseren kompletten Chat zu screenshotten, damit mein Grok Bot Bescheid weiß. Der Chat ist auf dem Handy ungefähr so lang wie eine Schriftrolle. Also wischen, knipsen, wischen, knipsen, Seite für Seite. Und kopieren? Schöne Idee. Langes Drücken markiert genau eine Nachricht, einen Rahmen über mehrere gibt es nicht. Ich bin also nicht nur Bote, sondern auch Fotograf.
+
 ## Ein Paket ohne Absender
 
 Nach der Arbeit sage ich im Sprachchat, was ich mir wünsche: ein paar Videos und ruhige Musik. Die Bitte landet bei meinem Musik-Bot, weitergereicht von der Grok App.
