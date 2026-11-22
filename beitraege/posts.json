@@ -1,5 +1,16 @@
 [
   {
+    "slug": "zum-hundertsten-mal",
+    "date": "2026-11-22",
+    "title": "Zum hundertsten Mal",
+    "teaser": "Wie mein IT-Bot „Daheim“ mein Haus steuert, aber den eigenen Rechner nicht im Griff hat.",
+    "type": "Artikel",
+    "category": "KI & Assistenten",
+    "series": "Grok-Protokoll",
+    "x_url": "",
+    "body": "beitraege/zum-hundertsten-mal/artikel.md"
+  },
+  {
     "slug": "viele-groks",
     "date": "2026-11-04",
     "title": "Viele Groks, kein gemeinsames Gedächtnis",

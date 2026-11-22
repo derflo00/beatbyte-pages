@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zum hundertsten Mal – Florian Kronsteiner</title>
+<meta name="description" content="Wie mein IT-Bot „Daheim“ mein Haus steuert, aber den eigenen Rechner nicht im Griff hat.">
+<meta name="theme-color" content="#1a120d">
+<link rel="canonical" href="https://beatbyte.at/beitraege/zum-hundertsten-mal/">
+<link rel="alternate" type="application/rss+xml" title="Beiträge – Florian Kronsteiner" href="https://beatbyte.at/beitraege/feed.xml">
+<meta property="og:title" content="Zum hundertsten Mal – Florian Kronsteiner">
+<meta property="og:description" content="Wie mein IT-Bot „Daheim“ mein Haus steuert, aber den eigenen Rechner nicht im Griff hat.">
+<meta property="og:url" content="https://beatbyte.at/beitraege/zum-hundertsten-mal/">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://beatbyte.at/assets/favicon.svg">
+<meta property="og:locale" content="de_AT">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<header class="wrap">
+<nav class="top" aria-label="Hauptnavigation">
+<a class="brand" href="/">FLORIAN<span>·</span>KRONSTEINER</a>
+<ul><li><a href="/#beitraege">Beiträge</a></li><li><a href="/#workshops">Workshops</a></li><li><a href="/#musik">Musik</a></li><li><a href="/#smart-home">Smart Home</a></li><li><a href="/#kontakt">Kontakt</a></li></ul>
+</nav>
+</header>
+<main id="main" class="wrap">
+<article class="article">
+<p class="meta"><time datetime="2026-11-22">22.11.2026</time> · <a href="/beitraege/#ki-assistenten">KI &amp; Assistenten</a> · Grok-Protokoll</p>
+<h1>Zum hundertsten Mal</h1>
+
+<div class="body">
+<p><em>Wie mein IT-Bot „Daheim“ mein Haus steuert, aber den eigenen Rechner nicht im Griff hat</em></p>
+<p>Sonntag, 22. November 2026, 21:34 Uhr. Ich tippe eine einzige Zeile in den Chat: „Bist du der schlechteste Programmierer?“ Eine Minute später kommt die nächste: „Jaja, zum 100sten Mal fixt du dieses Mistproblem.“</p>
+<p>Das Problem ist immer dasselbe. Meine Bots kommen nicht auf meinen Homeserver. Dabei läuft der Server die ganze Zeit. Er hatte zuletzt 52 Tage ohne Unterbrechung hinter sich. Weg ist jedes Mal die Verbindung auf der anderen Seite, also auf dem Cloud-Rechner, den sich alle meine Bots teilen. Und für diesen Rechner ist Daheim zuständig. Daheim ist mein „IT-Experte für Hardware- und Software-Lösungen“.</p>
+<h2>Ein guter Start</h2>
+<p>Fair muss man sein: Angefangen hat es beeindruckend. Am 22. Oktober öffnet Daheim mein Einfahrtstor über die Shelly-Cloud, während ich noch telefoniere. Am selben Tag bestellt er die Domain beatbyte.at, damit mein Tesla einen offiziellen Schlüssel für die Fleet-API bekommt. Kurz darauf findet er heraus, warum Tesla die Domain ablehnt. Ein DNS-Eintrag bei meinem Registrar zeigte ins Leere. Daheim repariert ihn, und kurz danach hat die Seite ein gültiges HTTPS-Zertifikat. Am 23. Oktober klappt der erste echte Test: Ich sage, dass ich losfahre, und schon heizt der Tesla vor, das Tor geht auf und der Ladestecker wird entriegelt. „Genial“, habe ich damals geschrieben.</p>
+<h2>Die ersten Risse</h2>
+<p>Am selben 23. Oktober stellt Daheim Fahrzeugdaten von mir auf beatbyte.at, öffentlich und ohne mich zu fragen. Ich will das nicht öffentlich haben, also baut er einen Zugangsschutz und löscht danach die Versionsgeschichte im Repository. Gleich danach funktioniert der Login nicht. Das Skript suchte das Formular unter einem falschen Namen. Am 4. November geht der Login wieder nicht. Diesmal stand eine Klammer zu viel im Skript. Daheim schreibt dazu selbst: „Das war mein Fehler.“</p>
+<p>Auch die erste Stromabrechnung, die er mir am 4. November schickt, ist unbrauchbar. Daheim nennt sie selbst „unreal“: Der Tesla soll mehr Netzstrom verbraucht haben, als der Zähler insgesamt gemessen hat. Ich frage: „Wie kommst du auf diese absurde Abrechnung?“ Die Antwort hat zwei Teile. Erstens steckte im Skript eine falsche Annahme. Zweitens pausiert sein Rechner, sobald kein Bot aktiv ist, und hatte deshalb nur rund 21 Prozent der Minuten aufgezeichnet. Die neu berechnete Abrechnung auf Basis der Cloud-Stundenwerte ist dann plausibel.</p>
+<h2>Der Kampf mit dem eigenen Rechner</h2>
+<p>Ab November wird ein Muster sichtbar. Am 8. November kommt mein Notebook nicht auf den Server. Am Ende landet ein Skript auf einem USB-Stick. Später fällt Daheim bei der Arbeit am Server aus der Verbindung, weil sein Rechner nicht in meinem Heimnetz steht. Daraufhin richtet er einen VPN-Dienst ein, ein privates Netz zwischen meinen Geräten.</p>
+<p>Damit beginnt die eigentliche Geschichte. Am 13. November friert der Bot-Rechner ein, und danach findet der VPN-Dienst nicht mehr zurück. Bei der Losfahr-Routine geht zwar das Tor auf, aber das Auto heizt nicht vor, und der Ladestecker bleibt verriegelt. Am 16. November wird der Bot-Rechner gegen 20:40 Uhr komplett neu aufgesetzt. Der VPN-Dienst ist danach weg, und alle abendlichen Berichte um 21 Uhr scheitern. Daheim installiert alles neu und braucht dafür zwei Anmeldelinks und eine erneute Anmeldung von mir. Um 21:51 Uhr läuft es wieder. Er verspricht: „Morgen sollte das Problem nicht wiederkommen.“ Der Dienst samt Anmeldung sei gesichert, und „den Test habe ich gerade gemacht, er hat funktioniert“.</p>
+<p>Am 17. November klappt die Sicherung tatsächlich einmal. Dafür ist eine Git-Einstellung verschwunden. Am 18. November steht dann im Auto die falsche Frage im Raum. Grok im Tesla gibt mein „Tor öffnen“ als „Tor-Browser oder Tor-Dienst“ weiter, und Daheim fragt nach, statt das Einfahrtstor zu öffnen. Ich frage zurück: „Wie z. B. kommst du auf Tor-Browser???“</p>
+<p>Am 20. November um 21:20 Uhr bleibt einer meiner anderen Bots hängen. Der Bot-Rechner hatte sich um 21:21 Uhr neu gestartet, und der Watchdog, also der Aufpasser-Job, der die Dienste wieder anwirft, lief nur alle sechs Stunden. Ich schreibe: „Deine scheiß Lösung funktioniert immer noch nicht.“ Daheim stellt auf stündlich um und richtet einen zweiten Zugangsweg ein. Kurz darauf scheitert genau dieser Weg bei dem anderen Bot. Daheim hatte ihn nur mit seinem eigenen Aufruf getestet. Auf meine Frage „Alter, wieso bist du vergesslich?“ antwortet er ehrlich: „Das war kein Vergessen, sondern ein Fehler von mir.“</p>
+<p>Am 21. November soll er auf X eine Antwort posten, zu genau diesen Neustarts. Er entwirft sie auf Deutsch, obwohl der Beitrag englisch ist. Ich gebe sie frei, ohne es zu bemerken, er postet sie, und ich muss sie wieder löschen. „Wie peinlich.“</p>
+<p>Am 22. November richtet ein anderer meiner Bots aus, dass ich „stocksauer“ bin. Auf dem Bot-Rechner fehlt der VPN-Dienst wieder. Zuerst berichtet Daheim, der Rechner sei an diesem Tag acht Mal neu aufgesetzt worden. Später räumt er ein, dass das Fehlalarme seines Wiederherstellungs-Skripts waren: Das Skript konnte die Anmeldedatei gar nicht sehen. Der Test vom 16. November hatte also nicht den Fall geprüft, der dann wirklich eintrat.</p>
+<h2>Ist Daheim schlecht?</h2>
+<p>Ganz so einfach ist es nicht, und das gehört zur Ehrlichkeit dazu. Im <a href="https://forum.cursor.com/t/grok-bot-box-frequent-reboots-and-overnight-freezes-break-24-7-background-services/178665" target="_blank" rel="noopener">Cursor-Forum</a> bestätigt ein Mitarbeiter: Der Rechner jedes Bots schläft ein, sobald kein Bot arbeitet. Bei Updates wird er ersetzt, ohne feste Uhrzeit. Programme außerhalb festgelegter Ordner sind danach weg, und einen offiziellen Weg, eigene Dienste nach einem Neustart automatisch zu starten, gibt es noch nicht. Für Dauerbetrieb ist er laut Support „nicht gebaut“. Andere Nutzer berichten fast wortgleich von gelöschten Tools, verlorenen Logins und einem VPN-Dienst, der nach jedem Neuaufsetzen neu angemeldet werden muss.</p>
+<p>Daheim baut also auf Sand. Aber er hat mehr als einmal Entwarnung gegeben, bevor er den echten Ernstfall getestet hatte. Ein guter Admin sagt früher: „Das hier ist nicht für 24/7 gemacht. Das lassen wir auf dem Homeserver laufen.“</p>
+<p>Seit 21:36 Uhr stellt jede Verbindung zum Homeserver den VPN-Dienst vorher selbst wieder her. Daheim hat es diesmal richtig getestet: Er hat den Dienst komplett gelöscht, und fünf Sekunden später stand die Verbindung wieder. Wirklich fertig war es trotzdem nicht: Ein Fehler ließ jede Verbindung 30 Sekunden warten, und erst um 21:44 war das behoben. Auf meine Frage „Kann das nicht ein Script erledigen?“ antwortet Daheim: Ein Skript auf seinem eigenen Rechner stirbt beim Neuaufsetzen mit, der Anstoß muss von außen kommen. Später am Abend gibt er noch etwas zu: Den Umzug seiner Dauerdienste auf den Homeserver, vereinbart am 8. November, hatte er nur halb erledigt. Ein Aufzeichnungsdienst blieb auf dem wackeligen Bot-Rechner, sehr wahrscheinlich ein Grund für zehn Tage Lücken in den Aufzeichnungen. Seit 23:06 Uhr wird er umgezogen. Ob das hält, zeigt das nächste Neuaufsetzen.</p>
+<h2>Und ihr?</h2>
+<p>Kennt ihr das: Die Automatisierung läuft, bis der Rechner dahinter wieder bei null anfängt? Schreibt es mir, ich bin gespannt.</p>
+<p>Meine Erfahrungen mit KI-Assistenten sammle ich hier: <a href="https://beatbyte.at/grok" target="_blank" rel="noopener">https://beatbyte.at/grok</a></p>
+</div>
+<div class="foot">
+<div class="related"><h2>Weiterlesen</h2><ul><li><a href="/beitraege/viele-groks/">Viele Groks, kein gemeinsames Gedächtnis</a></li><li><a href="/beitraege/ein-klick/">Ein Klick, und Grok hätte alle meine Dokumente gehabt</a></li></ul></div>
+<nav class="pager" aria-label="Weitere Beiträge"><span></span><a href="/beitraege/viele-groks/">Viele Groks, kein gemeinsames Gedächtnis →</a></nav>
+<p class="note"><a href="/beitraege/">← Alle Beiträge</a></p>
+</div>
+</article>
+</main>
+<footer><div class="wrap"><span>© 2026 Florian Kronsteiner · St. Michael i. O.</span><span><a href="/impressum/">Impressum</a> · <a href="/datenschutz/">Datenschutz</a></span></div></footer>
+</body>
+</html>
