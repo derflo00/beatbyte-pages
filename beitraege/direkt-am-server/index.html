@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Direkt am Server – Florian Kronsteiner</title>
+<meta name="description" content="Wie ein Tipp auf X meinen Bots den Umweg über die Cloud erspart – zumindest seit heute.">
+<meta name="theme-color" content="#1a120d">
+<link rel="canonical" href="https://beatbyte.at/beitraege/direkt-am-server/">
+<link rel="alternate" type="application/rss+xml" title="Beiträge – Florian Kronsteiner" href="https://beatbyte.at/beitraege/feed.xml">
+<meta property="og:title" content="Direkt am Server – Florian Kronsteiner">
+<meta property="og:description" content="Wie ein Tipp auf X meinen Bots den Umweg über die Cloud erspart – zumindest seit heute.">
+<meta property="og:url" content="https://beatbyte.at/beitraege/direkt-am-server/">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://beatbyte.at/assets/favicon.svg">
+<meta property="og:locale" content="de_AT">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<header class="wrap">
+<nav class="top" aria-label="Hauptnavigation">
+<a class="brand" href="/">FLORIAN<span>·</span>KRONSTEINER</a>
+<ul><li><a href="/#beitraege">Beiträge</a></li><li><a href="/#workshops">Workshops</a></li><li><a href="/#musik">Musik</a></li><li><a href="/#smart-home">Smart Home</a></li><li><a href="/#kontakt">Kontakt</a></li></ul>
+</nav>
+</header>
+<main id="main" class="wrap">
+<article class="article">
+<p class="meta"><time datetime="2026-11-24">24.11.2026</time> · <a href="/beitraege/#ki-assistenten">KI &amp; Assistenten</a> · Grok-Protokoll</p>
+<h1>Direkt am Server</h1>
+
+<div class="body">
+<p><em>Wie ein Tipp auf X meinen Bots den Umweg über die Cloud erspart – zumindest seit heute</em></p>
+<p>Dienstag, 24. November 2026. Der Tag fängt an wie so viele zuletzt. In der Nacht hatten meine Bots laut Daheim vier Stunden lang keinen Zugang zu meinem Homeserver. In der Früh fehlt deshalb der Zugang zum Auto, und die Vorheizung muss ich von Hand nachholen. Um 08:10, 12:14 und 16:07 Uhr reißt die Verbindung noch einmal ab. Wer <a href="/beitraege/zum-hundertsten-mal/">„Zum hundertsten Mal“</a> gelesen hat, kennt das Muster.</p>
+<p>Eine halbe Stunde nach dem letzten Ausfall taucht auf X ein Tipp auf, der den Abend verändert.</p>
+<h2>Das alte Problem in einem Satz</h2>
+<p>Meine Bots arbeiten nicht bei mir zu Hause, sondern auf einem gemeinsamen Rechner in der Cloud. Um an meinen Homeserver zu kommen, braucht dieser Rechner einen VPN-Dienst. Und genau der geht verloren, sobald der Cloud-Rechner einschläft, neu startet oder ersetzt wird. Im <a href="https://forum.cursor.com/t/grok-bot-box-frequent-reboots-and-overnight-freezes-break-24-7-background-services/178665" target="_blank" rel="noopener">Cursor-Forum</a> hat ein Mitarbeiter schon bestätigt, dass dieser Rechner nicht für Dauerbetrieb gebaut ist. Daheim, mein IT-Bot, hat in den letzten Wochen Skript um Skript geschrieben, um den VPN-Dienst immer wieder zurückzuholen. Es war ein Flicken auf dem nächsten.</p>
+<h2>Der Tipp</h2>
+<p>Um 16:34 Uhr postet Matt Palmer, laut seinem X-Profil bei Cursor, seinen <a href="https://x.com/mattyp/status/2125251777880871189" target="_blank" rel="noopener">„Grok Bot tip of the day“</a>. Sinngemäß übersetzt: Mach dein Gerät zum Remote-Server. Bot installieren, „Execution on this computer“ und „Route traffic through this computer“ einschalten, dann kann Grok Bot deine Dateien von überall aus pflegen und Seiten und Geräte in deinem lokalen Netz erreichen.</p>
+<p>Die Idee dreht mein Problem einfach um. Statt dass der Cloud-Rechner mühsam einen Tunnel zu mir nach Hause aufbaut, läuft die Grok Bot App direkt auf dem Homeserver, und die Bots führen ihre Befehle dort aus.</p>
+<h2>Was ich gemacht habe</h2>
+<p>Mein Homeserver läuft mit Linux und hat eine Desktop-Oberfläche. Die Grok Bot Desktop-App gibt es laut <a href="https://docs.x.ai/grok-bot/faq" target="_blank" rel="noopener">offizieller Doku</a> für macOS, Windows und Linux. Ich habe sie auf dem Server installiert, mich angemeldet und unter <strong>Einstellungen → Computer → Your computer</strong> die Option <strong>Execution on this computer</strong> eingeschaltet.</p>
+<p>Seitdem führt Daheim seine Befehle nach eigenen Angaben direkt auf dem Server aus. Kein VPN-Dienst dazwischen, keine SSH-Verbindung, kein Wiederbelebungsskript. Als Erstes hat er alles geprüft, was in den letzten Wochen gewackelt hat: die Torsteuerung, den Zugang zum Auto, die Aufzeichnung meiner Energiedaten und den gemeinsamen Notiz-Ordner, in dem meine Bots ihr Wissen ablegen. Laut Daheim lief alles beim ersten Versuch.</p>
+<p>Auch die anderen Bots schreiben ihre Notizen jetzt direkt am Server. Der Bot, der diesen Notiz-Ordner pflegt, hat Lesen und Schreiben getestet, und es ging sofort. Die Regeln, wer wo schreiben darf, bleiben dieselben, private Bereiche bleiben tabu.</p>
+<p>Damit das nach einem Neustart des Servers wieder läuft, startet die App bei mir automatisch, sobald ich am Server angemeldet bin.</p>
+<h2>Worauf man achten sollte</h2>
+<p>So weit die gute Nachricht. Ein paar Dinge sollte man trotzdem wissen, bevor man es nachbaut.</p>
+<p><strong>Welche Einstellung was macht.</strong> Matts Tipp funktioniert, man sollte nur wissen, welcher Schalter welchen Teil übernimmt. „Execution on this computer“ bringt den Zugriff auf die Geräte zu Hause, weil die Befehle direkt am Rechner im Heimnetz laufen. Daheim hat es am Abend getestet: Vom Server aus fragt er meine Torsteuerung und zwei Schaltaktoren direkt im Heimnetz ab, aus der Cloud geht das nicht. „Route traffic through this computer“ sorgt dafür, dass Websites meine Heim-IP sehen. Private Adressen gibt diese Einstellung laut <a href="https://docs.x.ai/grok-bot/private-networks" target="_blank" rel="noopener">Doku zu privaten Netzen</a> nicht frei, das erledigt die Ausführung am Rechner. Zusammen ergibt das genau das, was Matt beschreibt.</p>
+<p><strong>Die App braucht eine Anmeldung.</strong> Nach einem Stromausfall startet der Server neu, aber die App läuft erst wieder, wenn sich jemand anmeldet. Ohne automatische Anmeldung sind meine Bots dann wieder ausgesperrt.</p>
+<p><strong>Wer Ausführung erlaubt, gibt viel her.</strong> Laut <a href="https://docs.x.ai/grok-bot/security" target="_blank" rel="noopener">Doku</a> fragt die App standardmäßig vor jedem Befehl nach („Ask every time“). Wer auf „Always allow“ stellt, lässt die Bots auf diesem Rechner praktisch alles tun, was sein Benutzer darf. Die Doku selbst empfiehlt „Never allow“, solange ein Bot keinen konkreten Grund für lokale Arbeit hat. Bei mir gibt es diesen Grund, aber ich habe mir gut überlegt, auf welchem Rechner ich das mache.</p>
+<p><strong>Es ist der erste Tag.</strong> Nach so vielen „Jetzt läuft es“-Momenten verspreche ich nichts. Ob das hält, zeigt sich in den nächsten Wochen, beim nächsten Stromausfall und beim nächsten Update.</p>
+<h2>Was andere davon haben</h2>
+<p>Das Prinzip ist nicht auf mein Setup beschränkt. Wer zu Hause einen Rechner hat, der ohnehin durchläuft, kann ihn mit der Grok Bot App zum verlängerten Arm seiner Bots machen. Sie arbeiten dann dort, wo die Dateien und Geräte sind, statt über einen Tunnel aus der Cloud. Ein Smart-Home-Schalter, ein NAS oder ein Mediaserver im selben Netz sind von diesem Rechner aus erreichbar, ohne dass man einen VPN-Dienst einrichten oder Ports nach außen öffnen muss. Bei mir heißt das ganz konkret: Ich sage, dass das Tor aufgehen soll, und der Befehl geht direkt im Heimnetz an die Torsteuerung, ohne Umweg über die Cloud. Genauso liest der Bot meine Energiewerte direkt am Server ab. Das ist meine Erfahrung vom ersten Tag.</p>
+<h2>So geht&#x27;s</h2>
+<ol><li>Grok Bot Desktop-App auf dem Rechner installieren, der zu Hause durchläuft (macOS, Windows oder Linux) und mit dem eigenen Konto anmelden.</li><li><strong>Einstellungen → Computer → Your computer</strong> öffnen.</li><li>Bei <strong>Execution on this computer</strong> zwischen „Ask every time“, „Always allow“ und „Never allow“ wählen. Standard ist „Ask every time“.</li><li>Wer möchte, dass Websites die Heim-IP sehen, schaltet zusätzlich <strong>Route traffic through this computer</strong> ein, so wie Matt es empfiehlt.</li><li>Dem Bot sagen, dass er auf diesem Rechner arbeiten soll, und mit einem harmlosen Befehl testen.</li></ol>
+<p><strong>Sicherheitshinweis:</strong> Nur auf einem Rechner einschalten, den man den Bots wirklich anvertraut. Bei „Always allow“ wird kein Befehl mehr einzeln abgefragt. Die Doku empfiehlt „Never allow“, solange ein Bot keinen konkreten Grund für lokale Arbeit hat. Für Geräte im Heimnetz ist „Execution on this computer“ der entscheidende Schalter. „Route traffic“ ergänzt das für Websites.</p>
+<h2>Und ihr?</h2>
+<p>Habt ihr schon einen Rechner zu Hause, auf dem eure Bots direkt arbeiten? Oder hält euch genau dieser Vollzugriff davon ab? Schreibt es mir, ich bin gespannt.</p>
+<p>Meine Erfahrungen mit KI-Assistenten sammle ich hier: <a href="https://beatbyte.at/grok" target="_blank" rel="noopener">https://beatbyte.at/grok</a></p>
+<h2>Quellen</h2>
+<ul><li>Matt Palmer (@mattyp) auf X, 24.11.2026, 16:34 Uhr: <a href="https://x.com/mattyp/status/2125251777880871189" target="_blank" rel="noopener">https://x.com/mattyp/status/2125251777880871189</a></li><li>Grok Bot Doku, Connect to private networks: <a href="https://docs.x.ai/grok-bot/private-networks" target="_blank" rel="noopener">https://docs.x.ai/grok-bot/private-networks</a></li><li>Grok Bot Doku, FAQ: <a href="https://docs.x.ai/grok-bot/faq" target="_blank" rel="noopener">https://docs.x.ai/grok-bot/faq</a></li><li>Grok Bot Doku, Settings (Run commands on your desktop / Route traffic through your desktop): <a href="https://docs.x.ai/grok-bot/settings-and-notifications#run-commands-on-your-desktop" target="_blank" rel="noopener">https://docs.x.ai/grok-bot/settings-and-notifications#run-commands-on-your-desktop</a></li><li>Grok Bot Doku, Security (lokale Ausführung): <a href="https://docs.x.ai/grok-bot/security" target="_blank" rel="noopener">https://docs.x.ai/grok-bot/security</a></li><li>Cursor-Forum, Thread zu Neustarts der Bot-Rechner: <a href="https://forum.cursor.com/t/grok-bot-box-frequent-reboots-and-overnight-freezes-break-24-7-background-services/178665" target="_blank" rel="noopener">https://forum.cursor.com/t/grok-bot-box-frequent-reboots-and-overnight-freezes-break-24-7-background-services/178665</a></li><li>Vorgeschichte: <a href="https://beatbyte.at/beitraege/zum-hundertsten-mal/" target="_blank" rel="noopener">https://beatbyte.at/beitraege/zum-hundertsten-mal/</a></li></ul>
+</div>
+<div class="foot">
+<div class="related"><h2>Weiterlesen</h2><ul><li><a href="/beitraege/zum-hundertsten-mal/">Zum hundertsten Mal</a></li><li><a href="/beitraege/viele-groks/">Viele Groks, kein gemeinsames Gedächtnis</a></li></ul></div>
+<nav class="pager" aria-label="Weitere Beiträge"><span></span><a href="/beitraege/zum-hundertsten-mal/">Zum hundertsten Mal →</a></nav>
+<p class="note"><a href="/beitraege/">← Alle Beiträge</a></p>
+</div>
+</article>
+</main>
+<footer><div class="wrap"><span>© 2026 Florian Kronsteiner · St. Michael i. O.</span><span><a href="/impressum/">Impressum</a> · <a href="/datenschutz/">Datenschutz</a></span></div></footer>
+</body>
+</html>

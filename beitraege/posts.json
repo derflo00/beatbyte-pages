@@ -1,5 +1,16 @@
 [
   {
+    "slug": "direkt-am-server",
+    "date": "2026-11-24",
+    "title": "Direkt am Server",
+    "teaser": "Wie ein Tipp auf X meinen Bots den Umweg über die Cloud erspart – zumindest seit heute.",
+    "type": "Artikel",
+    "category": "KI & Assistenten",
+    "series": "Grok-Protokoll",
+    "x_url": "",
+    "body": "beitraege/direkt-am-server/artikel.md"
+  },
+  {
     "slug": "zum-hundertsten-mal",
     "date": "2026-11-22",
     "title": "Zum hundertsten Mal",
